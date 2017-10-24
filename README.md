@@ -12,9 +12,9 @@ You will find further specific instructions inside the unikernels directories.
 ```bash
 mirage cleanup
 mirage_configure --net=socket -t unix   # here several possible configuration-options exist
-make depend
+make depend   # fetches dependencies from `opam`
 make
-./your-unikernel   #run the unikernel (will be named what you specified in config.ml)
+./your-unikernel   # run the unikernel (will be named what you specified in config.ml)
 ```
 If you have already run the previous once, and have not added any new packages to the
 dependencies in config.ml, you can just run `make && ./your-unikernel`.
