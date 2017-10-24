@@ -4,8 +4,12 @@
 * Opam (package manager) + Mirage library installation instructions
   can be found at https://mirage.io/wiki/install 
 
-## Helpful Mirage Links
+## Helpful Mirage development links
 * Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
+* Search for Opam packages: ttps://opam.ocaml.org/packages/
+  * Find links to the packages documentation from here, or read the `*.mli` files
+    contained in your local opam folder with libraries (they are usually well documented).
+    Find this folder with `opam var lib`.
 * Mirage modules documentation: http://mirage.github.io/mirage/
   * Note that Mirage depends on other libraries in some of the module interfaces,
     so when you see 
