@@ -14,11 +14,14 @@ mirage cleanup
 mirage_configure --net=socket -t unix   # here several possible configuration-options exist
 make depend
 make
-./unikernel   #run the unikernel (will be named what you specified in config.ml)
+./your-unikernel   #run the unikernel (will be named what you specified in config.ml)
 ```
 If you have already run the previous once, and have not added any new packages to the
-dependencies in config.ml, you can just run `make && ./unikernel`.
+dependencies in config.ml, you can just run `make && ./your-unikernel`.
 
+```bash
+./your-unikernel --help   #to open a man-page for your own unikernel (:
+```
 
 ## Helpful Mirage development links
 * Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
