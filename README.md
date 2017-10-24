@@ -16,8 +16,8 @@ make depend
 make
 ./unikernel   #run the unikernel
 ```
-If you have added no packages the to dependencies in config.ml, you can just run
-`make && ./unikernel`.
+If you have already run the previous once, and have not added any new packages to the
+dependencies in config.ml, you can just run `make && ./unikernel`.
 
 
 ## Helpful Mirage development links
