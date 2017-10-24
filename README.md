@@ -1,5 +1,9 @@
 # MirageOS hands-on
 
+In this main README.md you find the general links and setup instructions
+for getting to an initial environment for running Mirage unikernels.
+You will find further specific instructions inside the unikernels directories.
+
 ## Setup
 * Opam (package manager) + Mirage library installation instructions
   can be found at https://mirage.io/wiki/install 
@@ -17,18 +21,6 @@
     the types in the `Functoria.KEY` module are also part of the current module.
     Therefore also lookup the documentation for Functoria if you want to understand
     the full interface.
-
-## Unikernels specific links
-
-### Merging histories over LAN
-
-#### Libraries
-
-##### EzIrmin
-* Guide: http://kcsrk.info/ocaml/irmin/crdt/2017/02/15/an-easy-interface-to-irmin-library/
-
-##### Lwt
-* Guide: https://mirage.io/docs/tutorial-lwt 
 
 ## Links for further reading
 
