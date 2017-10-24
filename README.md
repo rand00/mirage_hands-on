@@ -6,7 +6,7 @@
 
 ## Helpful Mirage development links
 * Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
-* Search for Opam packages: ttps://opam.ocaml.org/packages/
+* Search for Opam packages: https://opam.ocaml.org/packages/
   * Find links to the packages documentation from here, or read the `*.mli` files
     contained in your local opam folder with libraries (they are usually well documented).
     Find this folder with `opam var lib`.
