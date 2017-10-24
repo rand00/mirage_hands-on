@@ -16,6 +16,9 @@ make depend
 make
 ./unikernel   #run the unikernel
 ```
+If you have added no packages the to dependencies in config.ml, you can just run
+`make && ./unikernel`.
+
 
 ## Helpful Mirage development links
 * Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
