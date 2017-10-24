@@ -14,7 +14,7 @@ mirage cleanup
 mirage_configure --net=socket -t unix   # here several possible configuration-options exist
 make depend
 make
-./unikernel   #run the unikernel (will be named differently)
+./unikernel   #run the unikernel (will be named what you specified in config.ml)
 ```
 If you have already run the previous once, and have not added any new packages to the
 dependencies in config.ml, you can just run `make && ./unikernel`.
