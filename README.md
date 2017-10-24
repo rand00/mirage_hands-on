@@ -8,6 +8,14 @@ You will find further specific instructions inside the unikernels directories.
 * Opam (package manager) + Mirage library installation instructions
   can be found at https://mirage.io/wiki/install 
 
+## Common Mirage unikernel compilation workflow
+```bash
+mirage cleanup
+mirage_configure --net=socket -t unix   # here several possible configuration-options exist
+make depend
+make
+```
+
 ## Helpful Mirage development links
 * Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
 * Search for Opam packages: https://opam.ocaml.org/packages/
