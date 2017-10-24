@@ -1,9 +1,17 @@
 # MirageOS hands-on
 
 ## Setup
-
 * Opam (package manager) + Mirage library installation instructions
   can be found at https://mirage.io/wiki/install 
+
+## Helpful Mirage Links
+* Types for arguments of your 'Main' functor: http://docs.mirage.io/mirage-types-lwt/Mirage_types_lwt/index.html
+* Mirage modules documentation: http://mirage.github.io/mirage/
+  * Note that Mirage depends on other libraries in some interface, so when you see
+    a line in a Mirage module like `include Functoria.KEY`, this means that
+    the types in the `Functoria.KEY` module are also part of the current module.
+    Therefore also lookup the documentation for Functoria if you want to understand
+    the full interface.
 
 ## Unikernels specific links
 
