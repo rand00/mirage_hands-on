@@ -8,12 +8,13 @@ You will find further specific instructions inside the unikernels directories.
 * Opam (package manager) + Mirage library installation instructions
   can be found at https://mirage.io/wiki/install 
 
-## Common Mirage unikernel compilation workflow
+## Common Mirage unikernel development workflow
 ```bash
 mirage cleanup
 mirage_configure --net=socket -t unix   # here several possible configuration-options exist
 make depend
 make
+./unikernel   #run the unikernel
 ```
 
 ## Helpful Mirage development links
