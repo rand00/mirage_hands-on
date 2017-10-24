@@ -1,0 +1,3 @@
+PKG mirage mirage-clock-lwt mirage-console-lwt mirage-kv-lwt mirage-types-lwt mirage-net-lwt mirage-stack-lwt mirage-fs-lwt cohttp-lwt
+#S /home/rand/.opam/4.04.2+fPIC/lib/mirage
+#B /home/rand/.opam/4.04.2+fPIC/lib/mirage
