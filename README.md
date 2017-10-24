@@ -11,7 +11,7 @@ You will find further specific instructions inside the unikernels directories.
 ## Common Mirage unikernel development workflow
 ```bash
 mirage cleanup
-mirage_configure --net=socket -t unix   # here several possible configuration-options exist
+mirage configure --net=socket -t unix   # here several possible configuration-options exist
 make depend   # fetches dependencies from `opam`
 make
 ./your-unikernel   # run the unikernel (will be named what you specified in config.ml)
@@ -20,7 +20,7 @@ If you have already run the previous once, and have not added any new packages t
 dependencies in config.ml, you can just run `make && ./your-unikernel`.
 
 ```bash
-./your-unikernel --help   #to open a man-page for your own unikernel (:
+./your-unikernel --help   # to open a man-page for your own unikernel (:
 ```
 
 ## Helpful Mirage development links
