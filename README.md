@@ -44,3 +44,13 @@ dependencies in config.ml, you can just run `make && ./your-unikernel`.
   unikernels from:
   https://github.com/mirage/mirage-skeleton 
 
+### Interesting libraries
+
+* EzIrmin / Irmin : https://github.com/kayceesrk/ezirmin
+  * Git-like distributed datastore
+* TyXML : https://ocsigen.org/tyxml/
+  * Typesafe Html5 and Svg
+* Vg by Daniel Bünzli (and all his other libraries!) : http://erratique.ch/software/vg
+  * Functional declarative vector-graphics with cut instead of paste semantics.
+
+
