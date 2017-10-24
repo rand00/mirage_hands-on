@@ -24,7 +24,8 @@ You will find further specific instructions inside the unikernels directories.
 
 ## Links for further reading
 
-* MirageOS official Hello-world guide: https://mirage.io/wiki/hello-world
-* MirageOS official example unikernels to start your own code from:
+* MirageOS official Hello World guide: https://mirage.io/wiki/hello-world
+* MirageOS official example unikernels - a good place to start your own
+  unikernels from:
   https://github.com/mirage/mirage-skeleton 
 
