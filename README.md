@@ -5,7 +5,7 @@ for getting to an initial environment for running Mirage unikernels.
 You will find further specific instructions inside the unikernels directories.
 
 ## Setup
-* Opam (package manager) + Mirage library installation instructions
+* OCaml, Opam (package manager) and the MirageOS library installation instructions
   can be found at https://mirage.io/wiki/install 
 
 ## Common Mirage unikernel development workflow
