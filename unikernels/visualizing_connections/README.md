@@ -1,11 +1,16 @@
 
 # Visualizing connections
 
-... Under construction ...
+*... Under construction ...*
 
 Connect to your unikernel on localhost with
 * browser @ localhost:8080
 * socat @ localhost:4040
+
+## unikernel usage
+See unikernel parameters with `./visualizing_connections_unikernel --help`
+
+## socat usage
 
 ```bash
 $ socat - TCP4:localhost:4040
@@ -15,9 +20,7 @@ unikernel
 .. where each line written to `socat` will be seen as a separate 'command' 
 to the unikernel.
 
-See unikernel parameters with `./visualizing_connections_unikernel --help`
-
-## Libraries
+## Libraries used
 
 * TyXml: Typesafe Html5 and Svg
   * https://ocsigen.org/tyxml/ 

@@ -41,6 +41,7 @@ module Dispatch
     in
     Http.make ~conn_closed ~callback ()
 
+  (*goto filter external ip's optionally (but pr. default)*)
   let cmd_callback flow =
     let dst, dst_port = Stack.TCPV4.dst flow in
     let dst_str = (Ipaddr.V4.to_string dst) in
