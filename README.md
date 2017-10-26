@@ -53,8 +53,10 @@ dependencies in config.ml, you can just run `make && ./your-unikernel`.
 
 ### Interesting libraries
 
-* EzIrmin / Irmin : https://github.com/kayceesrk/ezirmin
-  * Git-like distributed datastore
+* Irmin (Git-like distributed datastore)
+  * Irmin github: https://github.com/mirage/irmin 
+  * EzIrmin (easy wrapper for Irmin) guide: https://github.com/kayceesrk/ezirmin
+    * Note: EzIrmin not compatible with Mirage for now, but interesting read
 * TyXML : https://ocsigen.org/tyxml/
   * Typesafe Html5 and Svg
 * Vg by Daniel Bünzli (and all his other libraries!) : http://erratique.ch/software/vg
