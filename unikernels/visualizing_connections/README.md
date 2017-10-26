@@ -8,9 +8,9 @@ Connect to your unikernel on localhost with
 * socat @ localhost:4040
 
 ## Unikernel usage
-* See unikernel parameters with `./visualizing_connections_unikernel --help`
 * See how to compile the unikernel at the main README 
   * https://github.com/rand00/mirage_hands-on 
+* When compiled, see unikernel parameters with `./visualizing_connections_unikernel --help`
 
 ## Socat usage
 
