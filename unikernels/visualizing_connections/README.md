@@ -9,4 +9,3 @@
   * http://erratique.ch/software/vg/demos/sqc.html
   * Nice example with animation: http://erratique.ch/software/vg/demos/sqc.html
 
-... Maybe more to come
