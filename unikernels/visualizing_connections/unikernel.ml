@@ -15,6 +15,7 @@ let warn_cmd = Cmd_log.warn
 
 let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
+let (%) f g x = f (g x)
 
 module Dispatch
     (Stack: Mirage_types_lwt.STACKV4) 
@@ -55,8 +56,10 @@ module Dispatch
         Lwt.return_unit
       | Ok (`Data b) ->
         log_cmd
-          (fun f -> f "read: %d bytes: %s"
-              (Cstruct.len b) (Cstruct.to_string b));
+          (fun f -> f "read from '%s': %d bytes: %s" 
+              dst_str
+              (Cstruct.len b)
+              (Cstruct.to_string b |> String.trim));
         loop flow
     in
     loop flow >>= fun () -> Stack.TCPV4.close flow
