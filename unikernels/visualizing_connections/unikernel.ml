@@ -7,8 +7,10 @@ module type HTTP = Cohttp_lwt.Server
 let http_src = Logs.Src.create "http" ~doc:"HTTP server"
 module Http_log = (val Logs.src_log http_src : Logs.LOG)
 
+(*goto think about module structure (for local socket connection + p2p tcp/http)*)
+
 module Dispatch
-    (Stack: Mirage_types_lwt.STACKV4)
+    (Stack: Mirage_types_lwt.STACKV4) (*goto do we need here?*)
     (Http: HTTP)
 = struct
 
@@ -45,7 +47,7 @@ module Main
   module D = Dispatch(Stack)(Http)
   module Ip = Stack.IPV4
 
-  (*>goto: gets the ip 0.0.0.0 on unix & net=socket - correct?*)
+  (*note: gets the ip 0.0.0.0 on unix & net=socket - correct?*)
   let ip_str stack () =
     Stack.ipv4 stack
     |> Ip.get_ip |> List.hd
@@ -59,6 +61,5 @@ module Main
       http tcp @@ D.serve (D.http_dispatch http_port (ip_str stack))
     in
     serve_http
-    (*Lwt.join [ https; http ]*)
 
 end
