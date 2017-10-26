@@ -6,7 +6,14 @@ You will find further specific instructions inside the unikernels directories.
 
 ## Setup
 * OCaml, Opam (package manager) and the MirageOS library installation instructions
-  can be found at https://mirage.io/wiki/install 
+  can be found at
+  * Linux/Unix/OSX
+    * https://mirage.io/wiki/install
+  * Windows + Windows Subsystem for Linux (I havn't tested this with Mirage)
+    * http://themargin.io/2017/02/02/OCaml_on_win/
+* Editor setup (code-completion, type-at-point, jump-to-location, indentation, documentation)
+  * Opam user setup (app to automatically setup editor configuration)
+    * https://github.com/AltGr/opam-user-setup 
 
 ## Common Mirage unikernel development workflow
 ```bash
