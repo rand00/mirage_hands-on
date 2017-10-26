@@ -11,7 +11,7 @@ You will find further specific instructions inside the unikernels directories.
     * https://mirage.io/wiki/install
   * Windows + Windows Subsystem for Linux (I havn't tested this with Mirage)
     * http://themargin.io/2017/02/02/OCaml_on_win/
-* Editor setup (code-completion, type-at-point, jump-to-location, indentation, documentation)
+* Editor setup (type-check in-code, code-completion, type-at-point, jump-to-location, indentation, documentation)
   * Opam user setup (app to automatically setup editor configuration)
     * https://github.com/AltGr/opam-user-setup 
 
