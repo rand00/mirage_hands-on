@@ -7,10 +7,10 @@ Connect to your unikernel on localhost with
 * browser @ localhost:8080
 * socat @ localhost:4040
 
-## unikernel usage
+## Unikernel usage
 See unikernel parameters with `./visualizing_connections_unikernel --help`
 
-## socat usage
+## Socat usage
 
 ```bash
 $ socat - TCP4:localhost:4040
