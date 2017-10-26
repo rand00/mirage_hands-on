@@ -1,40 +1,65 @@
 open Lwt.Infix
 
-(** Common signature for http and https. *)
-module type HTTP = Cohttp_lwt.Server
+module type HTTP = Cohttp_lwt.S.Server
 
 (* Logging *)
+(* goto find simpler way to define this if possible... *)
 let http_src = Logs.Src.create "http" ~doc:"HTTP server"
 module Http_log = (val Logs.src_log http_src : Logs.LOG)
+let log_http = Http_log.info
 
-(*goto think about module structure (for local socket connection + p2p tcp/http)*)
+let cmd_src = Logs.Src.create "cmd_socket" ~doc:"TCP cmd server"
+module Cmd_log = (val Logs.src_log cmd_src : Logs.LOG)
+let log_cmd = Cmd_log.info
+let warn_cmd = Cmd_log.warn
+
+let failf fmt = Fmt.kstrf Lwt.fail_with fmt
+
 
 module Dispatch
-    (Stack: Mirage_types_lwt.STACKV4) (*goto do we need here?*)
+    (Stack: Mirage_types_lwt.STACKV4) 
     (Http: HTTP)
 = struct
 
-  let failf fmt = Fmt.kstrf Lwt.fail_with fmt
-
-  let http_dispatch port get_ip_str uri =
+  let dispatch_http port get_ip_str uri =
     let ip_str = get_ip_str () in
     let body = Frontpage.(to_string @@ content ~ip_str) in
-    (*>goto make correct header - add content-type etc.*)
-    let headers = Cohttp.Header.init () in
+    let headers = Cohttp.Header.init () in (*<goto make correct header*)
     Http.respond_string ~status:`OK ~body ~headers ()
   
-  let serve dispatch =
+  let serve_http dispatch =
     let callback (_, cid) request _body =
       let uri = Cohttp.Request.uri request in
       let cid = Cohttp.Connection.to_string cid in
-      Http_log.info (fun f -> f "[%s] serving %s." cid (Uri.to_string uri));
+      log_http (fun f -> f "[%s] serving %s." cid (Uri.to_string uri));
       dispatch uri
     in
     let conn_closed (_,cid) =
       let cid = Cohttp.Connection.to_string cid in
-      Http_log.info (fun f -> f "[%s] closing" cid);
+      log_http (fun f -> f "[%s] closing" cid);
     in
     Http.make ~conn_closed ~callback ()
+
+  let cmd_callback flow =
+    let dst, dst_port = Stack.TCPV4.dst flow in
+    let dst_str = (Ipaddr.V4.to_string dst) in
+    let pp_error = Stack.TCPV4.pp_error in
+    log_cmd (fun f -> f "%s connected on port %d" dst_str dst_port);
+    let rec loop flow = 
+      Stack.TCPV4.read flow >>= function
+      | Ok `Eof ->
+        log_cmd (fun f -> f "closing connection to %s" dst_str);
+        Lwt.return_unit
+      | Error e ->
+        warn_cmd (fun f -> f "error reading data from: %a" pp_error e);
+        Lwt.return_unit
+      | Ok (`Data b) ->
+        log_cmd
+          (fun f -> f "read: %d bytes: %s"
+              (Cstruct.len b) (Cstruct.to_string b));
+        loop flow
+    in
+    loop flow >>= fun () -> Stack.TCPV4.close flow
 
 end
 
@@ -45,21 +70,29 @@ module Main
 = struct
 
   module D = Dispatch(Stack)(Http)
-  module Ip = Stack.IPV4
 
-  (*note: gets the ip 0.0.0.0 on unix & net=socket - correct?*)
+  (*note: gets the ip 0.0.0.0 on unix & net=socket 
+    - should this be set manually?*)
   let ip_str stack () =
-    Stack.ipv4 stack
-    |> Ip.get_ip |> List.hd
+    Stack.(ipv4 stack |> IPV4.get_ip)
+    |> List.hd
     |> Ipaddr.V4.to_string
   
   let start stack _clock http =
+    let cmd_socket_port = Key_gen.cmd_socket_port () in
     let http_port = Key_gen.http_port () in
-    let tcp = `TCP http_port in
     let serve_http =
-      Http_log.info (fun f -> f "listening on %d/TCP" http_port);
-      http tcp @@ D.serve (D.http_dispatch http_port (ip_str stack))
+      log_http (fun f -> f "listening on %d/TCP" http_port);
+      http (`TCP http_port)
+      @@ D.serve_http (D.dispatch_http http_port (ip_str stack))
+    and serve_cmd =
+      log_cmd (fun f -> f "listening on %d/TCP" cmd_socket_port);
+      Stack.listen_tcpv4 stack ~port:cmd_socket_port D.cmd_callback;
+      Stack.listen stack
     in
-    serve_http
+    Lwt.join [
+      serve_http;
+      serve_cmd;
+    ]
 
 end
