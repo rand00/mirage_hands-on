@@ -28,7 +28,7 @@ dependencies in config.ml, you can just run `make && ./your-unikernel`. Else for
 major changes to config.ml you need to run the whole clean-config-depend-make chain.
 
 ```bash
-./your-unikernel --help   # to open a man-page for your own unikernel (:
+./your-unikernel --help   # to open the custom man-page for your own unikernel (:
 ```
 
 ## Helpful Mirage development links
