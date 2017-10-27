@@ -52,6 +52,9 @@ major changes to config.ml you need to run the whole clean-config-depend-make ch
   unikernels from:
   https://github.com/mirage/mirage-skeleton 
 
+### Pioneer projects to contribute to on MirageOS
+See https://github.com/mirage/mirage-www/wiki/Pioneer-Projects
+
 ### Projects using Mirage
 * Nymote: MirageOS for private cloud and ownership of own data:
   http://nymote.org/blog/
