@@ -51,6 +51,10 @@ dependencies in config.ml, you can just run `make && ./your-unikernel`.
   unikernels from:
   https://github.com/mirage/mirage-skeleton 
 
+### Projects using Mirage
+* Nymote: MirageOS for private cloud and ownership of own data:
+  http://nymote.org/blog/
+
 ### Interesting libraries
 
 * Irmin (Git-like distributed datastore)
