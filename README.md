@@ -56,8 +56,11 @@ major changes to config.ml you need to run the whole clean-config-depend-make ch
 See https://github.com/mirage/mirage-www/wiki/Pioneer-Projects
 
 ### Projects using Mirage
-* Nymote: MirageOS for private cloud and ownership of own data:
-  http://nymote.org/blog/
+
+* Nymote: MirageOS for private cloud and ownership of own data
+  * http://nymote.org/blog/
+* Getting Things Done app for the browser (merging of state between browser tabs etc.)
+  * http://www.roscidus.com/blog/blog/2015/04/28/cuekeeper-gitting-things-done-in-the-browser/
 
 ### Interesting libraries
 
