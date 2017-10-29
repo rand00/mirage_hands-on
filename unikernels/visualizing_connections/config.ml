@@ -17,6 +17,8 @@ let main =
   let packages = [
     package "uri";
     package "tyxml";
+    package "astring";
+    package "ppx_sexp_conv";
     package "gg"; 
     package "vg";
   ] 
