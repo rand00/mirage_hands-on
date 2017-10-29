@@ -13,7 +13,7 @@ let parse_remote_msg s =
     |> Types.remote_msg_of_sexp
     |> R.ok
   with _ ->
-    Error (R.msg @@ "Wrong format of remote-msg: '"^str^"'")
+    Error (R.msg @@ "wrong format of remote-msg: '"^str^"'")
 
 let parse_ip s =
   let str = String.trim @@ Sub.to_string s in
