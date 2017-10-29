@@ -11,6 +11,9 @@ Connect to your unikernel on localhost with
 * See how to compile the unikernel at the main README 
   * https://github.com/rand00/mirage_hands-on 
 * When compiled, see unikernel parameters with `./visualizing_connections_unikernel --help`
+  and the following `socat` usage section. 
+* Read (and modify) the source! The unikernel is kept relatively simple, 
+  so it should be relatively simple to modify its behaviour.
 
 ## Socat usage
 
@@ -22,8 +25,12 @@ $ socat READLINE TCP4:localhost:4040
 <cmd>
 ...
 ```
-.. where each line written in `socat` will be seen as a separate command. 
-There exist the following commands (until you add more!):
+.. note that on some systems `socat` doesn't support the READLINE parameter
+which gives a bash-like interface. Exchange 'READLINE' with '-' to make it
+work.
+
+Each line written in `socat` will be seen as a separate command. 
+There exist the following commands (until you add more):
 * `remote <sexp>` where `<sexp>` is an internal s-expression format for 
   messages from other unikernels.
 * `actor <ip>` where `<ip>` is an address you want the unikernel to remember
