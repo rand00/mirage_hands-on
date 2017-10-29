@@ -1,3 +1,4 @@
+open Rresult
 open Sexplib
 open Lwt.Infix
 
@@ -37,7 +38,8 @@ module State = struct
   let known_actors : (Ipaddr.V4.t * (Types.actor option)) list ref
     = ref []
 
-  let nth_actor n = List.nth !known_actors n
+  let nth_actor n = try Ok(List.nth !known_actors n)
+    with _ -> Error (R.msg "Actor index not filled.")
   
   let save_actor (ip, actor) =
     let has_ip (ip', _) = ip' = ip in
@@ -149,30 +151,35 @@ module Dispatch
       | `Master ip ->
         restrict_remote @@ fun () ->
         State.master := Some ip;
+        log_cmd (fun f -> f "set master ip to %s" (Ipaddr.V4.to_string ip));
         ok_lwt ()
       | `Position p ->
         restrict_remote @@ fun () ->
         State.position := p;
+        log_cmd (fun f -> f "set position to %d" p);
         ok_lwt ()
       | `Send_msg actor_index ->
         (*goto add: [
             save local-visualization-state; 
           ]*)
         restrict_remote @@ fun () ->
-        let (actor_ip, actor) = State.nth_actor actor_index in
-        log_cmd (fun f ->
-            let name = (match actor with
-                  Some a -> a.name
-                | None -> "UNKNOWN") in
-            f "sending message to actor %s with ip %s"
-              name (Ipaddr.V4.to_string actor_ip)
-          );
-        send_message `To_actor ~stack ~dst_ip:actor_ip 
-        >>*= fun () ->
-        begin match !State.master with
-          | None -> ok_lwt () 
-          | Some master_ip ->
-            send_message `To_master ~stack ~dst_ip:master_ip 
+        begin match State.nth_actor actor_index with
+          | Error e -> err_lwt e
+          | Ok (actor_ip, actor) -> 
+            log_cmd (fun f ->
+                let name = (match actor with
+                      Some a -> a.name
+                    | None -> "UNKNOWN") in
+                f "sending message to actor %s with ip %s"
+                  name (Ipaddr.V4.to_string actor_ip)
+              );
+            send_message `To_actor ~stack ~dst_ip:actor_ip 
+            >>*= fun () ->
+            begin match !State.master with
+              | None -> ok_lwt () 
+              | Some master_ip ->
+                send_message `To_master ~stack ~dst_ip:master_ip 
+            end
         end 
       | `Remote msg ->
         begin match msg with
