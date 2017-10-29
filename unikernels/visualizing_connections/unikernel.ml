@@ -15,8 +15,6 @@ let warn_cmd = Cmd_log.warn
 
 let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
-let (%) f g x = f (g x)
-
 module Dispatch
     (Stack: Mirage_types_lwt.STACKV4) 
     (Http: HTTP)
@@ -41,8 +39,19 @@ module Dispatch
     in
     Http.make ~conn_closed ~callback ()
 
+  let dispatch_cmd ~ip cmd_str =
+    let open Rresult in
+    let ip_str = Ipaddr.V4.to_string ip in
+    Parse.cmd cmd_str >>= function
+    | `Remote msg -> log_cmd (fun f -> f "remote msg from %s" ip_str); Ok ()
+    | `Actor ip -> log_cmd (fun f -> f "actor msg from %s" ip_str); Ok ()
+    | `Master ip -> failwith "todo"
+    | `Position p -> failwith "todo"
+    | `Send_msg actor_index -> failwith "todo"
+    
+  
   (*goto filter external ip's optionally (but pr. default)*)
-  let cmd_callback flow =
+  let serve_cmd flow =
     let dst, dst_port = Stack.TCPV4.dst flow in
     let dst_str = (Ipaddr.V4.to_string dst) in
     let pp_error = Stack.TCPV4.pp_error in
@@ -55,12 +64,18 @@ module Dispatch
       | Error e ->
         warn_cmd (fun f -> f "error reading data from: %a" pp_error e);
         Lwt.return_unit
-      | Ok (`Data b) ->
-        log_cmd
+      | Ok (`Data buff) ->
+        let buff_str = Cstruct.to_string buff in
+        log_cmd (*goto remove later?*)
           (fun f -> f "read from '%s': %d bytes: %s" 
               dst_str
-              (Cstruct.len b)
-              (Cstruct.to_string b |> String.trim));
+              (Cstruct.len buff)
+              (Cstruct.to_string buff |> String.trim));
+        begin match dispatch_cmd ~ip:dst buff_str with
+          | Ok _ -> log_cmd (fun f -> f "Succesfully parsed msg.")
+          | Error e_msg ->
+            log_cmd (fun f -> f "Cmd-parser: %a." Rresult.R.pp_msg e_msg)
+        end;
         loop flow
     in
     loop flow >>= fun () -> Stack.TCPV4.close flow
@@ -91,7 +106,7 @@ module Main
       @@ D.serve_http (D.dispatch_http http_port (ip_str stack))
     and serve_cmd =
       log_cmd (fun f -> f "listening on %d/TCP" cmd_socket_port);
-      Stack.listen_tcpv4 stack ~port:cmd_socket_port D.cmd_callback;
+      Stack.listen_tcpv4 stack ~port:cmd_socket_port D.serve_cmd;
       Stack.listen stack
     in
     Lwt.join [
