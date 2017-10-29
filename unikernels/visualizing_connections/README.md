@@ -49,12 +49,14 @@ These commands are pr. default restricted to `localhost` usage only:
 * `position <degrees>` where `<degrees>` is the angle in degrees (clockwise) from 
   which your unikernel is positioned (physically) relative to the master unikernel.
 * `master <ip>` where `<ip>` is the address of the 'master' unikernel on the
-  network.
+  network. Use this to register your unikernels external communication at the
+  master node.
 * `actor <ip>` where `<ip>` is an address you want the unikernel to remember
   for some other unikernel. This command also sends a message right away
-  to this ip.
-* `<index>` which sends a message to the i'th unikernel ip registered with 
-  the `actor` command.
+  to this ip. Afterwards use the `<index>` command to send more messages
+  swiftly.
+* `<index>`; an integer given, which sends a message to the `i`'th unikernel-ip 
+  registered with the `actor` command.
 
 The rest of the commands supported, are used for communication between unikernels.
 * `remote <sexp>` where `<sexp>` is an internal s-expression format for 
