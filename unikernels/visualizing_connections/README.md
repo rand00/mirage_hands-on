@@ -13,6 +13,19 @@ Connect to your unikernel on localhost with
 * When compiled, see unikernel parameters with `./visualizing_connections_unikernel --help`
   and the following `socat` usage section. 
 * Read (and modify) the source! 
+  * The source files are:
+    * `config.ml`: The place where you specify which packages, parameters
+      and keys the unikernel depends on.
+    * `unikernel.ml`: The entry to the unikernel, containing the Main functor
+      parametrized by the modules specified in `config.ml`.
+    * `frontpage.ml`: A module containing a function for generating the
+      type-safe html for the front-page served by your unikernel on port
+      `8080`.
+    * `parse.ml`: Parsing of the commands written to the tcp-socket
+      served at port `4040`.
+    * `types.ml`: The types for e.g. messages - some of these derive 
+      s-expression readers/writers for easy transmission of ocaml
+      values.
 
 ## Socat usage
 
@@ -46,7 +59,9 @@ There exist the following commands (until you add more):
 
 * TyXml: Typesafe Html5 and Svg
   * https://ocsigen.org/tyxml/ 
+* Sexplib / `ppx_sexp_conv`: Ocaml-values to/from s-expressions.
+* Astring: Library for parsing strings, created to support very readable 
+  and correct, but more verbose code than regular-expression based parsing.
 * Vg: Declaratie 'cut semantics' vector graphics with different backends
   * http://erratique.ch/software/vg/demos/sqc.html
   * Nice example with animation: http://erratique.ch/software/vg/demos/sqc.html
-
