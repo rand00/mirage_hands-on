@@ -39,14 +39,23 @@ module State = struct
 
   let nth_actor n = List.nth !known_actors n
   
-  let save_actor_ip ip =
+  let save_actor (ip, actor) =
     let has_ip (ip', _) = ip' = ip in
     match CCList.find_idx has_ip !known_actors with
-    | Some (index, _) -> index
+    | Some (index, _) ->
+      begin match actor with
+      | None -> index
+      | Some _ as a ->
+        known_actors := CCList.set_at_idx index (ip, a)
+            !known_actors;
+        index
+      end 
     | None ->
-      known_actors := (ip, None) :: !known_actors;
+      known_actors := (ip, actor) :: !known_actors;
       0
 
+  let save_actor_ip ip = save_actor (ip, None)
+  
 end
   
 module Dispatch
@@ -87,16 +96,19 @@ module Dispatch
       )
     | Ok flow ->
       let sexp_str =
-        match type_ with
+        begin match type_ with
         | `To_actor ->
-          { name = !State.name; position = !State.position }
-          |> Types.sexp_of_remote_msg
-          |> Sexp.to_string
+          `Msg_actor {
+            name = !State.name;
+            position = !State.position }
         | `To_master ->
-          { name = !State.name; position = !State.position;
+          `Msg_master {
+            name = !State.name;
+            position = !State.position;
             to_ip = dst_ip_str }
-          |> Types.sexp_of_master_msg
-          |> Sexp.to_string
+        end 
+        |> Types.sexp_of_remote_msg
+        |> Sexp.to_string
       in
       let message = Printf.sprintf "remote %s\n" sexp_str in
       let payload = Cstruct.of_string message in
@@ -162,8 +174,27 @@ module Dispatch
           | Some master_ip ->
             send_message `To_master ~stack ~dst_ip:master_ip 
         end 
-      | `Remote msg -> (*goto *)
-        log_cmd (fun f -> f "remote msg from %s" ip_str);
+      | `Remote msg ->
+        begin match msg with
+          | `Msg_actor am ->
+            let index = State.save_actor (ip, Some am) in
+            log_cmd (fun f ->
+                f "got message from actor %s@%s - info saved to index %d"
+                  am.name ip_str index);
+          | `Msg_master mm ->
+            (*goto 
+              . save visualization state 
+            *)
+            let ifrom = State.save_actor (ip, Some {
+                name = mm.name;
+                position = mm.position
+              })
+            and ito = State.save_actor_ip @@
+              Ipaddr.V4.of_string_exn mm.to_ip
+            in
+            log_cmd (fun f -> f "%s@%s (index %d) -> %s (index %d)"
+                        mm.name ip_str ifrom mm.to_ip ito);
+        end;
         ok_lwt ()
     in
     (Parse.cmd cmd_str |> Lwt.return)
