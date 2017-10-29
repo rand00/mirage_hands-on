@@ -41,13 +41,29 @@ module Dispatch
 
   let dispatch_cmd ~ip cmd_str =
     let open Rresult in
+    let is_remote = not @@ Ipaddr.V4.(localhost = ip || any = ip) in
     let ip_str = Ipaddr.V4.to_string ip in
+    let restrict_remote thunk =
+      if is_remote then
+        let err_msg = Printf.sprintf
+            "external actor with ip '%s' tried to run local command: '%s'"
+            ip_str (String.trim cmd_str) in
+        Error (R.msg @@ err_msg)
+      else thunk ()
+    in
     Parse.cmd cmd_str >>= function
     | `Remote msg -> log_cmd (fun f -> f "remote msg from %s" ip_str); Ok ()
-    | `Actor ip -> log_cmd (fun f -> f "actor msg from %s" ip_str); Ok ()
-    | `Master ip -> failwith "todo"
-    | `Position p -> failwith "todo"
-    | `Send_msg actor_index -> failwith "todo"
+    | `Actor ip ->
+      restrict_remote (fun () ->
+          log_cmd (fun f -> f "actor msg from %s" ip_str);
+          Ok ()
+        )
+    | `Master ip ->
+      restrict_remote (fun () -> failwith "todo")
+    | `Position p ->
+      restrict_remote (fun () -> failwith "todo")
+    | `Send_msg actor_index ->
+      restrict_remote (fun () -> failwith "todo")
     
   
   (*goto filter external ip's optionally (but pr. default)*)
