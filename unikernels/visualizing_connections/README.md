@@ -12,8 +12,7 @@ Connect to your unikernel on localhost with
   * https://github.com/rand00/mirage_hands-on 
 * When compiled, see unikernel parameters with `./visualizing_connections_unikernel --help`
   and the following `socat` usage section. 
-* Read (and modify) the source! The unikernel is kept relatively simple, 
-  so it should be relatively simple to modify its behaviour.
+* Read (and modify) the source! 
 
 ## Socat usage
 
@@ -25,8 +24,8 @@ $ socat READLINE TCP4:localhost:4040
 <cmd>
 ...
 ```
-.. note that on some systems `socat` doesn't support the READLINE parameter
-which gives a bash-like interface. Exchange 'READLINE' with '-' to make it
+.. note that on some systems `socat` doesn't support the `READLINE` parameter
+which gives a bash-like interface. Exchange `READLINE` with `-` to make it
 work.
 
 Each line written in `socat` will be seen as a separate command. 
