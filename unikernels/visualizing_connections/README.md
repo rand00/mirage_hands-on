@@ -60,8 +60,10 @@ There exist the following commands (until you add more):
 * TyXml: Typesafe Html5 and Svg
   * https://ocsigen.org/tyxml/ 
 * Sexplib / `ppx_sexp_conv`: Ocaml-values to/from s-expressions.
+  * https://github.com/janestreet/ppx_sexp_conv 
 * Astring: Library for parsing strings, created to support very readable 
   and correct, but more verbose code than regular-expression based parsing.
+  * http://erratique.ch/software/astring/doc/Astring (see examples at bottom)
 * Vg: Declaratie 'cut semantics' vector graphics with different backends
   * http://erratique.ch/software/vg/demos/sqc.html
   * Nice example with animation: http://erratique.ch/software/vg/demos/sqc.html
