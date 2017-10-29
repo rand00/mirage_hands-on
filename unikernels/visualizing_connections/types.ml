@@ -5,14 +5,14 @@ open Sexplib.Std
 
 type actor = {
   name : string;
-  position : float;
+  position : int;
 } [@@deriving sexp]
 
 type remote_msg = actor [@@deriving sexp]
 
 type master_msg = {
   name : string;
-  position : float;
+  position : int;
   to_ip : string;
 } [@@deriving sexp]
 
