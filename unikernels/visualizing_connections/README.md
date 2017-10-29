@@ -64,6 +64,7 @@ There exist the following commands (until you add more):
 * Astring: Library for parsing strings, created to support very readable 
   and correct, but more verbose code than regular-expression based parsing.
   * http://erratique.ch/software/astring/doc/Astring (see examples at bottom)
-* Vg: Declaratie 'cut semantics' vector graphics with different backends
-  * http://erratique.ch/software/vg/demos/sqc.html
+* Vg: Declarative 'cut semantics' vector graphics parametrized by different 
+  backends.
+  * http://erratique.ch/software/vg/doc/index
   * Nice example with animation: http://erratique.ch/software/vg/demos/sqc.html
