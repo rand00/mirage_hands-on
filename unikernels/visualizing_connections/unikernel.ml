@@ -1,5 +1,8 @@
+open Sexplib
 open Lwt.Infix
 
+open Types
+    
 module type HTTP = Cohttp_lwt.S.Server
 
 (* Logging *)
@@ -15,11 +18,25 @@ let warn_cmd = Cmd_log.warn
 
 let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
+let ok_lwt x = Lwt.return @@ Ok x
+let err_lwt x = Lwt.return @@ Error x
+
+let (>>*=) m f =
+  m >>= function
+  | Error _ as e -> Lwt.return e
+  | Ok x -> f x
+
 module State = struct
 
+  let position = ref 0
+
+  let name = ref ""
+  
   let known_actors : (Ipaddr.V4.t * (Types.actor option)) list ref
     = ref []
 
+  let nth_actor n = List.nth !known_actors n
+  
   let save_actor_ip ip =
     let has_ip (ip', _) = ip' = ip in
     match CCList.find_idx has_ip !known_actors with
@@ -27,7 +44,7 @@ module State = struct
     | None ->
       known_actors := (ip, None) :: !known_actors;
       0
-  
+
 end
   
 module Dispatch
@@ -54,7 +71,7 @@ module Dispatch
     in
     Http.make ~conn_closed ~callback ()
 
-  let dispatch_cmd ~ip cmd_str =
+  let dispatch_cmd ~stack ~ip cmd_str =
     let open Rresult in
     let is_remote = not @@ Ipaddr.V4.(localhost = ip || any = ip) in
     let ip_str = Ipaddr.V4.to_string ip in
@@ -63,7 +80,7 @@ module Dispatch
         let err_msg = Printf.sprintf
             "external actor with ip '%s' tried to run local command: '%s'"
             ip_str (String.trim cmd_str) in
-        Error (R.msg @@ err_msg)
+        err_lwt (R.msg @@ err_msg)
       else thunk ()
     in
     let rec aux = function
@@ -79,17 +96,49 @@ module Dispatch
       | `Position p ->
         restrict_remote (fun () -> failwith "todo")
       | `Send_msg actor_index ->
-        restrict_remote (fun () -> failwith "todo")
+        (*goto howto: [send msg dst; save vis-state; send msg master]*)
+        restrict_remote @@ fun () ->
+        let (dst_ip, actor) = State.nth_actor actor_index in
+        let tcpv4 = Stack.tcpv4 stack in
+        let open Lwt.Infix in
+        Stack.TCPV4.create_connection tcpv4 (dst_ip, 4040)
+        >>= begin function
+          | Error _ ->
+            err_lwt (
+              R.msg @@ Printf.sprintf "error contacting destination %s"
+                (Ipaddr.V4.to_string dst_ip)
+            )
+          | Ok flow ->
+            let sexp_str =
+              { name = !State.name; position = !State.position }
+              |> Types.sexp_of_remote_msg
+              |> Sexp.to_string in
+            let message = Printf.sprintf "remote %s\n" sexp_str in
+            let payload = Cstruct.of_string message in
+            Stack.TCPV4.write flow payload >>= function
+            | Error _ ->
+              err_lwt (
+                R.msg @@ Printf.sprintf "error writing to destination %s"
+                  (Ipaddr.V4.to_string dst_ip)
+              )
+            | Ok _ as ok ->
+              log_cmd (fun f ->
+                  f "succesfully wrote message to %s"
+                    (Ipaddr.V4.to_string dst_ip)
+                );
+              Stack.TCPV4.close flow >>= fun () -> 
+              ok_lwt ()
+        end 
       | `Remote msg ->
         log_cmd (fun f -> f "remote msg from %s" ip_str);
-        Ok ()
+        ok_lwt ()
     in
-    Parse.cmd cmd_str
-    >>= aux 
+    (Parse.cmd cmd_str |> Lwt.return)
+    >>*= aux 
     
-  let serve_cmd flow =
+  let serve_cmd ~stack flow =
     let dst, dst_port = Stack.TCPV4.dst flow in
-    let dst_str = (Ipaddr.V4.to_string dst) in
+    let dst_str = Ipaddr.V4.to_string dst in
     let pp_error = Stack.TCPV4.pp_error in
     log_cmd (fun f -> f "%s connected on port %d" dst_str dst_port);
     let rec loop flow = 
@@ -102,12 +151,12 @@ module Dispatch
         Lwt.return_unit
       | Ok (`Data buff) ->
         let buff_str = Cstruct.to_string buff in
-        begin match dispatch_cmd ~ip:dst buff_str with
-          | Ok () ->
-            log_cmd (fun f -> f "succesfully parsed msg.")
-          | Error e_msg ->
-            log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg)
-        end;
+        begin dispatch_cmd ~stack ~ip:dst buff_str >|= function
+        | Ok () ->
+          log_cmd (fun f -> f "succesfully parsed msg.")
+        | Error e_msg ->
+          log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg);
+        end >>= fun () -> 
         loop flow
     in
     loop flow >>= fun () -> Stack.TCPV4.close flow
@@ -138,7 +187,7 @@ module Main
       @@ D.serve_http (D.dispatch_http http_port (ip_str stack))
     and serve_cmd =
       log_cmd (fun f -> f "listening on %d/TCP" cmd_socket_port);
-      Stack.listen_tcpv4 stack ~port:cmd_socket_port D.serve_cmd;
+      Stack.listen_tcpv4 stack ~port:cmd_socket_port (D.serve_cmd ~stack);
       Stack.listen stack
     in
     Lwt.join [
