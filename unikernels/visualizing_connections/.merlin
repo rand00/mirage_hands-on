@@ -1,7 +1,7 @@
 PKG mirage mirage-clock-lwt mirage-console-lwt
 PKG mirage-kv-lwt mirage-types-lwt mirage-net-lwt
 PKG mirage-stack-lwt mirage-fs-lwt cohttp-lwt
-PKG vg gg tyxml
+PKG vg gg tyxml containers
 PKG ppx_sexp_conv sexplib 
 
 S .

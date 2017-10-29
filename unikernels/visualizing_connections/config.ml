@@ -19,6 +19,7 @@ let main =
     package "tyxml";
     package "astring";
     package "ppx_sexp_conv";
+    package "containers";
     package "gg"; 
     package "vg";
   ] 
