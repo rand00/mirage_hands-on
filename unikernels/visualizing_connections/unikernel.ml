@@ -15,6 +15,21 @@ let warn_cmd = Cmd_log.warn
 
 let failf fmt = Fmt.kstrf Lwt.fail_with fmt
 
+module State = struct
+
+  let known_actors : (Ipaddr.V4.t * (Types.actor option)) list ref
+    = ref []
+
+  let save_actor_ip ip =
+    let has_ip (ip', _) = ip' = ip in
+    match CCList.find_idx has_ip !known_actors with
+    | Some (index, _) -> index
+    | None ->
+      known_actors := (ip, None) :: !known_actors;
+      0
+  
+end
+  
 module Dispatch
     (Stack: Mirage_types_lwt.STACKV4) 
     (Http: HTTP)
@@ -51,23 +66,27 @@ module Dispatch
         Error (R.msg @@ err_msg)
       else thunk ()
     in
-    Parse.cmd cmd_str >>= function
-    | `Remote msg -> log_cmd (fun f -> f "remote msg from %s" ip_str); Ok ()
-    | `Actor ip ->
-      (*goto howto: [save ip; send msg;] *)
-      restrict_remote (fun () ->
-          log_cmd (fun f -> f "actor msg from %s" ip_str);
-          Ok ()
-        )
-    | `Master ip ->
-      restrict_remote (fun () -> failwith "todo")
-    | `Position p ->
-      restrict_remote (fun () -> failwith "todo")
-    | `Send_msg actor_index ->
-      restrict_remote (fun () -> failwith "todo")
+    let rec aux = function
+      | `Actor ip ->
+        restrict_remote @@ fun () ->
+        let actor_index = State.save_actor_ip ip in
+        log_cmd (fun f ->
+            f "saved ip %s at index %d"
+              (Ipaddr.V4.to_string ip) actor_index);
+        aux @@ `Send_msg actor_index
+      | `Master ip ->
+        restrict_remote (fun () -> failwith "todo")
+      | `Position p ->
+        restrict_remote (fun () -> failwith "todo")
+      | `Send_msg actor_index ->
+        restrict_remote (fun () -> failwith "todo")
+      | `Remote msg ->
+        log_cmd (fun f -> f "remote msg from %s" ip_str);
+        Ok ()
+    in
+    Parse.cmd cmd_str
+    >>= aux 
     
-  
-  (*goto filter external ip's optionally (but pr. default)*)
   let serve_cmd flow =
     let dst, dst_port = Stack.TCPV4.dst flow in
     let dst_str = (Ipaddr.V4.to_string dst) in
@@ -84,7 +103,7 @@ module Dispatch
       | Ok (`Data buff) ->
         let buff_str = Cstruct.to_string buff in
         begin match dispatch_cmd ~ip:dst buff_str with
-          | Ok _ ->
+          | Ok () ->
             log_cmd (fun f -> f "succesfully parsed msg.")
           | Error e_msg ->
             log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg)
