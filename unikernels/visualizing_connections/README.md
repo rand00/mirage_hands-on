@@ -41,9 +41,11 @@ $ socat READLINE TCP4:localhost:4040
 which gives a bash-like interface. Exchange `READLINE` with `-` to make it
 work.
 
+### Commands supported via `socat` interface
+
 Each line written in `socat` will be seen as a separate command. 
 There exist the following commands meant to be used locally (until you add more!).
-These commands are pr. default restricted to localhost usage only:
+These commands are pr. default restricted to `localhost` usage only:
 * `position <degrees>` where `<degrees>` is the angle in degrees (clockwise) from 
   which your unikernel is positioned relative to the master unikernel.
 * `master <ip>` where `<ip>` is the address of the 'master' unikernel on the
