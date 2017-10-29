@@ -48,6 +48,7 @@ There exist the following commands meant to be used locally (until you add more!
 These commands are pr. default restricted to `localhost` usage only:
 * `position <degrees>` where `<degrees>` is the angle in degrees (clockwise) from 
   which your unikernel is positioned (physically) relative to the master unikernel.
+  `<degrees>` is represented as an integer.
 * `master <ip>` where `<ip>` is the address of the 'master' unikernel on the
   network. Use this to register your unikernels external communication at the
   master node.

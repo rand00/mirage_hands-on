@@ -19,7 +19,7 @@ let parse_ip s =
   let str = String.trim @@ Sub.to_string s in
   Ipaddr.V4.of_string str
   |> R.of_option ~none:(fun () ->
-      Error (R.msg @@ "Wrong format ipv4: '"^str^"'")
+      Error (R.msg @@ "wrong format for ipv4: '"^str^"'")
     )
 
 let parse_position s =
@@ -27,7 +27,7 @@ let parse_position s =
   if is_num str then
     Ok (int_of_string str)
   else
-    Error (R.msg "Position was not a digit")
+    Error (R.msg "position was not a digit")
 
 let drop_white s = Sub.drop ~sat:Char.Ascii.is_white s
 
@@ -51,7 +51,7 @@ let parse_cmd s =
     Ok (`Position (pos))
   | msg when is_num msg ->
     Ok(`Send_msg (int_of_string msg))
-  | s -> Error(R.msg @@ "Unknown command '"^s^"'")
+  | s -> Error(R.msg @@ "parser: unknown command '"^s^"'")
 
 let cmd str =
   Sub.v str |> drop_white |> parse_cmd

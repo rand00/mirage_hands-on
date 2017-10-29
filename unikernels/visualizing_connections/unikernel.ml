@@ -54,6 +54,7 @@ module Dispatch
     Parse.cmd cmd_str >>= function
     | `Remote msg -> log_cmd (fun f -> f "remote msg from %s" ip_str); Ok ()
     | `Actor ip ->
+      (*goto howto: [save ip; send msg;] *)
       restrict_remote (fun () ->
           log_cmd (fun f -> f "actor msg from %s" ip_str);
           Ok ()
@@ -82,15 +83,11 @@ module Dispatch
         Lwt.return_unit
       | Ok (`Data buff) ->
         let buff_str = Cstruct.to_string buff in
-        log_cmd (*goto remove later?*)
-          (fun f -> f "read from '%s': %d bytes: %s" 
-              dst_str
-              (Cstruct.len buff)
-              (Cstruct.to_string buff |> String.trim));
         begin match dispatch_cmd ~ip:dst buff_str with
-          | Ok _ -> log_cmd (fun f -> f "Succesfully parsed msg.")
+          | Ok _ ->
+            log_cmd (fun f -> f "succesfully parsed msg.")
           | Error e_msg ->
-            log_cmd (fun f -> f "Cmd-parser: %a." Rresult.R.pp_msg e_msg)
+            log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg)
         end;
         loop flow
     in
