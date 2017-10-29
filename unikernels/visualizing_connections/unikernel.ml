@@ -96,7 +96,11 @@ module Dispatch
       | `Position p ->
         restrict_remote (fun () -> failwith "todo")
       | `Send_msg actor_index ->
-        (*goto howto: [send msg dst; save vis-state; send msg master]*)
+        (*goto howto: [
+            send msg dst; DONE
+            save vis-state; 
+            send msg master
+          ]*)
         restrict_remote @@ fun () ->
         let (dst_ip, actor) = State.nth_actor actor_index in
         let tcpv4 = Stack.tcpv4 stack in
@@ -150,6 +154,7 @@ module Dispatch
         warn_cmd (fun f -> f "error reading data from: %a" pp_error e);
         Lwt.return_unit
       | Ok (`Data buff) ->
+        (*should have continued reading here or parsed packet-based protocol*)
         let buff_str = Cstruct.to_string buff in
         begin dispatch_cmd ~stack ~ip:dst buff_str >|= function
         | Ok () ->
@@ -157,7 +162,7 @@ module Dispatch
         | Error e_msg ->
           log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg);
         end >>= fun () -> 
-        loop flow
+        loop flow 
     in
     loop flow >>= fun () -> Stack.TCPV4.close flow
 
