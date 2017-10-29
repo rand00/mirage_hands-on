@@ -47,7 +47,7 @@ Each line written in `socat` will be seen as a separate command.
 There exist the following commands meant to be used locally (until you add more!).
 These commands are pr. default restricted to `localhost` usage only:
 * `position <degrees>` where `<degrees>` is the angle in degrees (clockwise) from 
-  which your unikernel is positioned relative to the master unikernel.
+  which your unikernel is positioned (physically) relative to the master unikernel.
 * `master <ip>` where `<ip>` is the address of the 'master' unikernel on the
   network.
 * `actor <ip>` where `<ip>` is an address you want the unikernel to remember
