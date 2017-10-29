@@ -28,6 +28,8 @@ let (>>*=) m f =
 
 module State = struct
 
+  let master = ref None
+  
   let position = ref 0
 
   let name = ref ""
@@ -71,6 +73,47 @@ module Dispatch
     in
     Http.make ~conn_closed ~callback ()
 
+  let send_message ~stack ~dst_ip type_ =
+    let open Rresult in
+    let open Lwt.Infix in
+    let tcpv4 = Stack.tcpv4 stack in
+    let dst_ip_str = Ipaddr.V4.to_string dst_ip
+    in
+    Stack.TCPV4.create_connection tcpv4 (dst_ip, 4040) >>= function
+    | Error _ ->
+      err_lwt (
+        R.msg @@ Printf.sprintf "error contacting destination %s"
+          dst_ip_str
+      )
+    | Ok flow ->
+      let sexp_str =
+        match type_ with
+        | `To_actor ->
+          { name = !State.name; position = !State.position }
+          |> Types.sexp_of_remote_msg
+          |> Sexp.to_string
+        | `To_master ->
+          { name = !State.name; position = !State.position;
+            to_ip = dst_ip_str }
+          |> Types.sexp_of_master_msg
+          |> Sexp.to_string
+      in
+      let message = Printf.sprintf "remote %s\n" sexp_str in
+      let payload = Cstruct.of_string message in
+      Stack.TCPV4.write flow payload >>= function
+      | Error _ ->
+        err_lwt (
+          R.msg @@ Printf.sprintf "error writing to destination %s"
+            (Ipaddr.V4.to_string dst_ip)
+        )
+      | Ok _ as ok ->
+        log_cmd (fun f ->
+            f "succesfully wrote message to %s"
+              (Ipaddr.V4.to_string dst_ip)
+          );
+        Stack.TCPV4.close flow >>= fun () -> 
+        ok_lwt ()
+
   let dispatch_cmd ~stack ~ip cmd_str =
     let open Rresult in
     let is_remote = not @@ Ipaddr.V4.(localhost = ip || any = ip) in
@@ -92,48 +135,34 @@ module Dispatch
               (Ipaddr.V4.to_string ip) actor_index);
         aux @@ `Send_msg actor_index
       | `Master ip ->
-        restrict_remote (fun () -> failwith "todo")
+        restrict_remote @@ fun () ->
+        State.master := Some ip;
+        ok_lwt ()
       | `Position p ->
-        restrict_remote (fun () -> failwith "todo")
+        restrict_remote @@ fun () ->
+        State.position := p;
+        ok_lwt ()
       | `Send_msg actor_index ->
-        (*goto howto: [
-            send msg dst; DONE
-            save vis-state; 
-            send msg master
+        (*goto add: [
+            save local-visualization-state; 
           ]*)
         restrict_remote @@ fun () ->
-        let (dst_ip, actor) = State.nth_actor actor_index in
-        let tcpv4 = Stack.tcpv4 stack in
-        let open Lwt.Infix in
-        Stack.TCPV4.create_connection tcpv4 (dst_ip, 4040)
-        >>= begin function
-          | Error _ ->
-            err_lwt (
-              R.msg @@ Printf.sprintf "error contacting destination %s"
-                (Ipaddr.V4.to_string dst_ip)
-            )
-          | Ok flow ->
-            let sexp_str =
-              { name = !State.name; position = !State.position }
-              |> Types.sexp_of_remote_msg
-              |> Sexp.to_string in
-            let message = Printf.sprintf "remote %s\n" sexp_str in
-            let payload = Cstruct.of_string message in
-            Stack.TCPV4.write flow payload >>= function
-            | Error _ ->
-              err_lwt (
-                R.msg @@ Printf.sprintf "error writing to destination %s"
-                  (Ipaddr.V4.to_string dst_ip)
-              )
-            | Ok _ as ok ->
-              log_cmd (fun f ->
-                  f "succesfully wrote message to %s"
-                    (Ipaddr.V4.to_string dst_ip)
-                );
-              Stack.TCPV4.close flow >>= fun () -> 
-              ok_lwt ()
+        let (actor_ip, actor) = State.nth_actor actor_index in
+        log_cmd (fun f ->
+            let name = (match actor with
+                  Some a -> a.name
+                | None -> "UNKNOWN") in
+            f "sending message to actor %s with ip %s"
+              name (Ipaddr.V4.to_string actor_ip)
+          );
+        send_message `To_actor ~stack ~dst_ip:actor_ip 
+        >>*= fun () ->
+        begin match !State.master with
+          | None -> ok_lwt () 
+          | Some master_ip ->
+            send_message `To_master ~stack ~dst_ip:master_ip 
         end 
-      | `Remote msg ->
+      | `Remote msg -> (*goto *)
         log_cmd (fun f -> f "remote msg from %s" ip_str);
         ok_lwt ()
     in
@@ -154,7 +183,7 @@ module Dispatch
         warn_cmd (fun f -> f "error reading data from: %a" pp_error e);
         Lwt.return_unit
       | Ok (`Data buff) ->
-        (*should have continued reading here or parsed packet-based protocol*)
+        (*goto fix: use packet-based protocol on top of tcp*)
         let buff_str = Cstruct.to_string buff in
         begin dispatch_cmd ~stack ~ip:dst buff_str >|= function
         | Ok () ->
