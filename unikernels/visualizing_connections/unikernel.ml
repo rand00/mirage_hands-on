@@ -78,19 +78,30 @@ module Dispatch
         (Frontpage.(to_string @@ content ~ip_str),
          Cohttp.Header.init ())
       | "/master" ->
+        (*debugging*)
+        log_http (fun f -> f "viewed %d unviewed %d actors %d"
+                     (List.length !State.master_viewed)
+                     (List.length !State.master_unviewed)
+                     (List.length !State.known_actors)
+                 );
         let body = Masterpage.Graphics.(
             render_svg ~log:(fun s -> log_http (fun f -> f"%s" s))
             @@ visualize
               ~viewed:!State.master_viewed
               ~unviewed:!State.master_unviewed
               ~actors:!State.known_actors 
-          )
-        and headers = Cohttp.Header.(
+          ) in
+        begin
+          State.master_viewed := !State.master_unviewed @ !State.master_viewed;
+          State.master_unviewed := [];
+        end;
+        let headers = Cohttp.Header.(
             init ()
             |> (fun t -> add t "Content-Type" "image/svg+xml")
             |> (fun t -> add t "Content-Language" "non-html")
           )
-        in body, headers
+        in
+        body, headers
     (*goto add 'wrong-page' page*)
     in
     Http.respond_string ~status:`OK ~body ~headers ()
