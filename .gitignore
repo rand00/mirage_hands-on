@@ -10,6 +10,7 @@ main.ml
 myocamlbuild.ml
 *.opam
 *_unikernel
+socat_history
 
 *~
 *#
