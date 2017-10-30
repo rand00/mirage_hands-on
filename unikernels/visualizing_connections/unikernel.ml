@@ -73,12 +73,26 @@ module Dispatch
 
   let dispatch_http port get_ip_str uri =
     let ip_str = get_ip_str () in
-    let body = match Uri.path uri with
-      | "" | "/" -> Frontpage.(to_string @@ content ~ip_str)
-      | "/master" -> Masterpage.(to_string @@ content)
-      (*goto add 'wrong-page' page*)
+    let body, headers = match Uri.path uri with
+      | "" | "/" ->
+        (Frontpage.(to_string @@ content ~ip_str),
+         Cohttp.Header.init ())
+      | "/master" ->
+        let body = Masterpage.Graphics.(
+            render_svg ~log:(fun s -> log_http (fun f -> f"%s" s))
+            @@ visualize
+              ~viewed:!State.master_viewed
+              ~unviewed:!State.master_unviewed
+              ~actors:!State.known_actors 
+          )
+        and headers = Cohttp.Header.(
+            init ()
+            |> (fun t -> add t "Content-Type" "image/svg+xml")
+            |> (fun t -> add t "Content-Language" "non-html")
+          )
+        in body, headers
+    (*goto add 'wrong-page' page*)
     in
-    let headers = Cohttp.Header.init () in (*<goto make correct header*)
     Http.respond_string ~status:`OK ~body ~headers ()
   
   let serve_http dispatch =
