@@ -23,6 +23,7 @@ let main =
     package "containers";
     package "gg"; 
     package "vg";
+    package "vg.svg";
   ] 
   and keys = List.map Key.abstract [
       http_port;
