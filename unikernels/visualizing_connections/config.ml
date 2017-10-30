@@ -9,7 +9,8 @@ let http_port =
   Key.(create "http_port" Arg.(opt int 8080 arg))
 
 let cmd_socket_port =
-  let doc = "Listening cmd-interface port." in
+  let doc = "Listening cmd-interface port (should be \
+             the same as for the other unikernels)." in
   let arg = Key.Arg.info ~doc ["cmd_socket"] in
   Key.(create "cmd_socket_port" Arg.(opt int 4040 arg))
 
