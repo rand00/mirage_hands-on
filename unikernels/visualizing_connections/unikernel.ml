@@ -76,6 +76,7 @@ module Dispatch
     let body = match Uri.path uri with
       | "" | "/" -> Frontpage.(to_string @@ content ~ip_str)
       | "/master" -> Masterpage.(to_string @@ content)
+      (*goto add 'wrong-page' page*)
     in
     let headers = Cohttp.Header.init () in (*<goto make correct header*)
     Http.respond_string ~status:`OK ~body ~headers ()
@@ -97,13 +98,14 @@ module Dispatch
     let open Rresult in
     let open Lwt.Infix in
     let tcpv4 = Stack.tcpv4 stack in
-    let dst_ip_str = Ipaddr.V4.to_string dst_ip
+    let dst_ip_str = Ipaddr.V4.to_string dst_ip in
+    let dst_port = 4040 
     in
-    Stack.TCPV4.create_connection tcpv4 (dst_ip, 4040) >>= function
+    Stack.TCPV4.create_connection tcpv4 (dst_ip, dst_port) >>= function
     | Error _ ->
       err_lwt (
-        R.msg @@ Printf.sprintf "error contacting destination %s"
-          dst_ip_str
+        R.msg @@ Printf.sprintf "error contacting destination %s on port %d"
+          dst_ip_str dst_port
       )
     | Ok flow ->
       let sexp_str =
