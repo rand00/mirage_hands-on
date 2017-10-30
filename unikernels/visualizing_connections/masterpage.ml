@@ -60,7 +60,7 @@ module Graphics = struct
   module Shapes = struct
 
     let sender p =
-      let color = Color.red in
+      let color = Color.red in (*goto depend on actor-index for ip*)
       let path = P.empty >> P.circle P2.o 0.01 in
       I.const color >> I.cut ~area:`Aeo path >>
       I.move p
@@ -74,19 +74,20 @@ module Graphics = struct
       I.move p0
     
     let connection_unviewed =
-      let area = `O { P.o with P.width = 0.005 } in
+      let area = `O { P.o with P.width = 0.01 } in
       connection area Color.blue
 
     let connection_viewed =
       let area = `O { P.o with P.width = 0.005 } in
-      connection area (Color.gray 0.5)
+      connection area (Color.gray 0.3)
     
   end 
 
   open Types
 
   let image_of_msg ~radius ~actors type_ (_, msg) =
-    let p0_angle = Vector.degree_to_polar msg.position in
+    let p0_angle =
+      Vector.degree_to_polar msg.position +. Float.pi_div_2 in
     let p0 = V2.polar radius p0_angle in
     let p1 =  
       match
@@ -95,7 +96,8 @@ module Graphics = struct
           ) actors
       with
       | Some (_, Some(a : actor)) ->
-        let p1_angle = Vector.degree_to_polar a.position in
+        let p1_angle =
+          (Vector.degree_to_polar a.position) +. Float.pi_div_2 in
         V2.polar radius p1_angle
       | _ -> P2.o
     in
@@ -132,7 +134,6 @@ module Graphics = struct
       I.const @@ Color.gray 0.8
       >> List.fold_right I.blend viewed_imgs 
       >> List.fold_right I.blend unviewed_imgs 
-      >> I.blend (Shapes.actor P2.o)
     in
     let center_v2 = V2.(smul 0.5 (v aspect real_height)) in
     let final_image = image >> I.move center_v2
