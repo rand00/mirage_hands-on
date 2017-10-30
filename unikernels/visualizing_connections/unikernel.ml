@@ -57,6 +57,12 @@ module State = struct
       0
 
   let save_actor_ip ip = save_actor (ip, None)
+
+  let master_unviewed : (Ipaddr.V4.t * Types.master_msg) list ref
+    = ref [] 
+
+  let master_viewed : (Ipaddr.V4.t * Types.master_msg) list ref
+    = ref [] 
   
 end
   
@@ -67,7 +73,10 @@ module Dispatch
 
   let dispatch_http port get_ip_str uri =
     let ip_str = get_ip_str () in
-    let body = Frontpage.(to_string @@ content ~ip_str) in
+    let body = match Uri.path uri with
+      | "" | "/" -> Frontpage.(to_string @@ content ~ip_str)
+      | "/master" -> Masterpage.(to_string @@ content)
+    in
     let headers = Cohttp.Header.init () in (*<goto make correct header*)
     Http.respond_string ~status:`OK ~body ~headers ()
   
@@ -188,10 +197,8 @@ module Dispatch
             log_cmd (fun f ->
                 f "got message from actor %s@%s - info saved to index %d"
                   am.name ip_str index);
-          | `Msg_master mm ->
-            (*goto 
-              . save visualization state 
-            *)
+          | `Msg_master mm -> 
+            State.(master_unviewed := (ip, mm) :: !master_unviewed);
             let ifrom = State.save_actor (ip, Some {
                 name = mm.name;
                 position = mm.position
@@ -224,7 +231,7 @@ module Dispatch
         (*goto fix: use packet-based protocol on top of tcp*)
         let buff_str = Cstruct.to_string buff in
         begin dispatch_cmd ~stack ~ip:dst buff_str >|= function
-        | Ok () ->
+        | Ok () -> 
           log_cmd (fun f -> f "succesfully parsed msg.")
         | Error e_msg ->
           log_cmd (fun f -> f "%a." Rresult.R.pp_msg e_msg);
@@ -243,8 +250,6 @@ module Main
 
   module D = Dispatch(Stack)(Http)
 
-  (*note: gets the ip 0.0.0.0 on unix & net=socket 
-    - should this be set manually?*)
   let ip_str stack () =
     Stack.(ipv4 stack |> IPV4.get_ip)
     |> List.hd
