@@ -74,16 +74,18 @@ module Graphics = struct
         v 135. 55. 0. alpha; 
       ]
 
-    let sender p =
-      let color = Color.red in (*goto depend on actor-index for ip*)
+    let len_colors = List.length colors
+
+    let sender i p =
+      let color = List.nth colors ((i mod len_colors -1) +1) in
       let path = P.empty >> P.circle P2.o 0.01 in
       I.const color >> I.cut ~area:`Aeo path >>
       I.move p
 
     let actor = sender
 
-    let receiver p =
-      let color = Color.red in (*goto depend on actor-index for ip*)
+    let receiver i p =
+      let color = List.nth colors ((i mod len_colors -1) +1) in
       let path = P.empty >> P.rect Box2.(v P2.o Size2.(v 0.018 0.018)) in
       I.const color >> I.cut ~area:`Aeo path >>
       I.move p
@@ -108,8 +110,14 @@ module Graphics = struct
 
   open Types
 
-  let image_of_msg ~radius ~actors type_ (_, msg) =
+  let image_of_msg ~radius ~actors type_ (sender_ip, msg) =
     (*goto find index of from-ip and supply to shape*)
+    let index_of_ip ip =
+      match CCList.find_idx (fun (ip', _) -> ip' = ip) actors with
+      | Some (i, _) -> i
+      | None -> 0
+    in
+    let sender_index = index_of_ip sender_ip in
     let p0_angle =
       Vector.degree_to_polar msg.position +. Float.pi_div_2 in
     let p0 = V2.polar radius p0_angle in
@@ -126,14 +134,16 @@ module Graphics = struct
         V2.polar radius p1_angle
       | _ -> P2.o
     in
+    let receiver_index =
+      index_of_ip (Ipaddr.V4.of_string_exn msg.to_ip) in
     let connection =
       match type_ with
       | `Viewed -> Shapes.connection_viewed p0 p1
       | `Unviewed -> Shapes.connection_unviewed p0 p1
     in
     List.fold_left I.blend I.void [
-      Shapes.sender p0;
-      Shapes.receiver p1;
+      Shapes.sender sender_index p0;
+      Shapes.receiver receiver_index p1;
       connection;
     ]
 
