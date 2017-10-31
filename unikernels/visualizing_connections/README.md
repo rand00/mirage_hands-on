@@ -4,10 +4,6 @@
 Connect to your unikernel on localhost with
 * browser @ localhost:8080
 * socat @ localhost:4040
-  * for convenience a script `socat.sh` lies in this directory that sets up socat
-    with history and cli-shortcuts etc. This might not be supported in the ubuntu
-    16.04 version of socat, so try the `socat_ubuntu.sh` instead. Else see the following
-    socat-usage section.
 
 ## Unikernel usage
 * See how to compile the unikernel at the main README 
@@ -31,23 +27,24 @@ Connect to your unikernel on localhost with
 
 ## Socat usage
 
+For convenience there are two predefined scripts for connecting `socat`
+to your unikernel; try `socat.sh` (more features used) or `./socat_ubuntu.sh`.
+
 The port 4040 of your unikernel is used for sending commands from your
 computer to the unikernel.
 
 ```bash
-$ socat READLINE TCP4:localhost:4040
+$ socat - TCP4:localhost:4040
 <cmd>
 ...
 ```
-.. note that on some systems `socat` doesn't support the `READLINE` parameter
-which gives a bash-like interface. Exchange `READLINE` with `-` to make it
-work.
+
+Each line written to `socat` will be seen as a separate command. 
 
 ### Unikernel commands supported via the `socat` TCPV4 connection
 
-Each line written in `socat` will be seen as a separate command. 
-There exist the following commands meant to be used locally (until you add more!).
-These commands are pr. default restricted to `localhost` usage only:
+The unikernel is set up to support the following commands (until you add more!).
+The first set of commands are pr. default restricted to `localhost` usage only:
 * `position <degrees>` where `<degrees>` is the angle in degrees (clockwise) from 
   which your unikernel is positioned (physically) relative to the master unikernel.
   `<degrees>` is represented as an integer.
@@ -61,7 +58,7 @@ These commands are pr. default restricted to `localhost` usage only:
 * `<index>`; an integer given, which sends a message to the `i`'th unikernel-ip 
   registered with the `actor` command.
 
-The rest of the commands supported, are used for communication between unikernels.
+The last command supported, are used for communication between unikernels.
 * `remote <sexp>` where `<sexp>` is an internal s-expression format for 
   messages from other unikernels.
 
