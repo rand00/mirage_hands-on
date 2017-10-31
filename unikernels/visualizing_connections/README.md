@@ -43,7 +43,7 @@ $ socat READLINE TCP4:localhost:4040
 which gives a bash-like interface. Exchange `READLINE` with `-` to make it
 work.
 
-### Commands supported via `socat` interface
+### Unikernel commands supported via the `socat` TCPV4 connection
 
 Each line written in `socat` will be seen as a separate command. 
 There exist the following commands meant to be used locally (until you add more!).
