@@ -59,6 +59,21 @@ module Graphics = struct
   
   module Shapes = struct
 
+    let colors =
+      let open Color in
+      let alpha = 0.8
+      in [
+        v 130. 77. 153. alpha; (*clairvoyant*)
+        v 95. 135. 211. alpha; (*cornflower*)
+        v 211. 143. 95. alpha; (*whiskey*)
+        v 135. 155. 0. alpha; (*yellow green*)
+
+        v 10. 77. 153. alpha;
+        v 95. 235. 111. alpha;
+        v 211. 143. 9. alpha;
+        v 135. 55. 0. alpha; 
+      ]
+
     let sender p =
       let color = Color.red in (*goto depend on actor-index for ip*)
       let path = P.empty >> P.circle P2.o 0.01 in
@@ -66,6 +81,12 @@ module Graphics = struct
       I.move p
 
     let actor = sender
+
+    let receiver p =
+      let color = Color.red in (*goto depend on actor-index for ip*)
+      let path = P.empty >> P.rect Box2.(v P2.o Size2.(v 0.018 0.018)) in
+      I.const color >> I.cut ~area:`Aeo path >>
+      I.move p
 
     (*goto make receiver shape and use in image_of_msg *)
     
@@ -111,8 +132,8 @@ module Graphics = struct
       | `Unviewed -> Shapes.connection_unviewed p0 p1
     in
     List.fold_left I.blend I.void [
-      Shapes.actor p0;
-      Shapes.actor p1;
+      Shapes.sender p0;
+      Shapes.receiver p1;
       connection;
     ]
 
