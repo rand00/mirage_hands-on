@@ -1,11 +1,12 @@
 
 # Visualizing connections
 
-*... Under construction ...*
-
 Connect to your unikernel on localhost with
 * browser @ localhost:8080
 * socat @ localhost:4040
+  * for convenience a script `socat.sh` lies in this directory that sets up socat
+    with history and cli-shortcuts etc. This might not be supported in the ubuntu
+    16.04 version of socat, so try the `socat_ubuntu.sh` instead.
 
 ## Unikernel usage
 * See how to compile the unikernel at the main README 
