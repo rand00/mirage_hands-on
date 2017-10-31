@@ -66,6 +66,8 @@ module Graphics = struct
       I.move p
 
     let actor = sender
+
+    (*goto make receiver shape and use in image_of_msg *)
     
     let connection area color p0 p1 =
       let p = V2.sub p1 p0 in
@@ -86,12 +88,14 @@ module Graphics = struct
   open Types
 
   let image_of_msg ~radius ~actors type_ (_, msg) =
+    (*goto find index of from-ip and supply to shape*)
     let p0_angle =
       Vector.degree_to_polar msg.position +. Float.pi_div_2 in
     let p0 = V2.polar radius p0_angle in
     let p1 =  
       match
-        CCList.find_pred (fun (ip, _) ->
+        (*goto find index of to-ip and supply to shape*)
+        CCList.find_pred (fun (ip, _) -> 
             ip = Ipaddr.V4.of_string_exn msg.to_ip
           ) actors
       with
