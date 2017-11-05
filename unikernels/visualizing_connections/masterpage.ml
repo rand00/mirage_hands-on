@@ -61,23 +61,29 @@ module Graphics = struct
 
     let colors =
       let open Color in
-      let alpha = 0.8
+      let a = 1.0 in
+      let v = v_srgbi 
       in [
-        v 130. 77. 153. alpha; (*clairvoyant*)
-        v 95. 135. 211. alpha; (*cornflower*)
-        v 211. 143. 95. alpha; (*whiskey*)
-        v 135. 155. 0. alpha; (*yellow green*)
+        v 130 77 153 ~a; (*clairvoyant*)
+        v 95 135 211 ~a; (*cornflower*)
+        v 211 143 95 ~a; (*whiskey*)
+        v 135 155 0 ~a; (*yellow green*)
 
-        v 10. 77. 153. alpha;
-        v 95. 235. 111. alpha;
-        v 211. 143. 9. alpha;
-        v 135. 55. 0. alpha; 
+        v 10 77 153 ~a;
+        v 95 235 111 ~a;
+        v 211 143 9 ~a;
+        v 135 55 0 ~a; 
       ]
 
     let len_colors = List.length colors
 
+    let color_of_index i =
+      let c_index = ((i mod len_colors -1) +1) in
+      Logs.info (fun f -> f"ACTOR INDEX %d, COLOR INDEX %d" i c_index);
+      List.nth colors c_index
+    
     let sender i p =
-      let color = List.nth colors ((i mod len_colors -1) +1) in
+      let color = color_of_index i in
       let path = P.empty >> P.circle P2.o 0.01 in
       I.const color >> I.cut ~area:`Aeo path >>
       I.move p
@@ -85,13 +91,13 @@ module Graphics = struct
     let actor = sender
 
     let receiver i p =
-      let color = List.nth colors ((i mod len_colors -1) +1) in
-      let path = P.empty >> P.rect Box2.(v P2.o Size2.(v 0.018 0.018)) in
+      let color = color_of_index i in
+      let w = 0.018 in
+      let path = P.empty >> P.rect (Box2.v P2.o (Size2.v w w)) in
+      let pos = V2.sub p (V2.half (V2.v w w)) in
       I.const color >> I.cut ~area:`Aeo path >>
-      I.move p
+      I.move pos
 
-    (*goto make receiver shape and use in image_of_msg *)
-    
     let connection area color p0 p1 =
       let p = V2.sub p1 p0 in
       let path = P.empty >> P.line p in
