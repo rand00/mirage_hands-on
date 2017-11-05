@@ -53,8 +53,9 @@ module State = struct
         index
       end 
     | None ->
-      known_actors := (ip, actor) :: !known_actors;
-      0
+      let known_actors' = !known_actors @ [ip,actor] in
+      known_actors := known_actors';
+      pred @@ List.length known_actors'
 
   let save_actor_ip ip = save_actor (ip, None)
 
