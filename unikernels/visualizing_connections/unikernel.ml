@@ -123,14 +123,14 @@ module Dispatch
     let open Rresult in
     let open Lwt.Infix in
     let tcpv4 = Stack.tcpv4 stack in
-    let dst_ip_str = Ipaddr.V4.to_string dst_ip in
+    let dst_ip_real = match type_ with `To_master ip -> ip | _ -> dst_ip in
     let dst_port = 4040 
     in
-    Stack.TCPV4.create_connection tcpv4 (dst_ip, dst_port) >>= function
+    Stack.TCPV4.create_connection tcpv4 (dst_ip_real, dst_port) >>= function
     | Error _ ->
       err_lwt (
         R.msg @@ Printf.sprintf "error contacting destination %s on port %d"
-          dst_ip_str dst_port
+          (Ipaddr.V4.to_string dst_ip_real) dst_port
       )
     | Ok flow ->
       let sexp_str =
@@ -139,11 +139,11 @@ module Dispatch
           `Msg_actor {
             name = !State.name;
             position = !State.position }
-        | `To_master ->
+        | `To_master _master_ip ->
           `Msg_master {
             name = !State.name;
             position = !State.position;
-            to_ip = dst_ip_str }
+            to_ip = Ipaddr.V4.to_string dst_ip }
         end 
         |> Types.sexp_of_remote_msg
         |> Sexp.to_string
@@ -209,12 +209,12 @@ module Dispatch
                 f "sending message to actor %s with ip %s"
                   name (Ipaddr.V4.to_string actor_ip)
               );
-            send_message `To_actor ~stack ~dst_ip:actor_ip 
+            send_message `To_actor ~dst_ip:actor_ip ~stack 
             >>*= fun () ->
             begin match !State.master with
               | None -> ok_lwt () 
               | Some master_ip ->
-                send_message `To_master ~stack ~dst_ip:master_ip 
+                send_message (`To_master master_ip) ~dst_ip:actor_ip ~stack
             end
         end 
       | `Remote msg ->
@@ -231,7 +231,7 @@ module Dispatch
                 position = mm.position
               })
             and ito = State.save_actor_ip @@
-              Ipaddr.V4.of_string_exn mm.to_ip
+              Ipaddr.V4.of_string_exn mm.to_ip 
             in
             log_cmd (fun f -> f "%s@%s (index %d) -> %s (index %d)"
                         mm.name ip_str ifrom mm.to_ip ito);

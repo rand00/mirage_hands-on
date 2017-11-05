@@ -78,7 +78,7 @@ module Graphics = struct
     let len_colors = List.length colors
 
     let color_of_index i =
-      let c_index = ((i mod len_colors -1) +1) in
+      let c_index = i mod len_colors in (*((i mod len_colors -1) +1) in*) 
       Logs.info (fun f -> f"ACTOR INDEX %d, COLOR INDEX %d" i c_index);
       List.nth colors c_index
     
@@ -128,17 +128,20 @@ module Graphics = struct
       Vector.degree_to_polar msg.position +. Float.pi_div_2 in
     let p0 = V2.polar radius p0_angle in
     let p1 =  
-      match
-        (*goto find index of to-ip and supply to shape*)
-        CCList.find_pred (fun (ip, _) -> 
-            ip = Ipaddr.V4.of_string_exn msg.to_ip
-          ) actors
+      match CCList.find_pred (fun (ip, _) -> 
+          ip = Ipaddr.V4.of_string_exn msg.to_ip
+        ) actors
       with
       | Some (_, Some(a : actor)) ->
         let p1_angle =
           (Vector.degree_to_polar a.position) +. Float.pi_div_2 in
         V2.polar radius p1_angle
-      | _ -> P2.o
+      | Some (ip, _) ->
+        Logs.info (fun f -> f"P2.o!! (ip %s)" @@ Ipaddr.V4.to_string ip);
+        P2.o
+      | None ->
+        Logs.info (fun f -> f"P2.o!! (Not found)");
+        P2.o
     in
     let receiver_index =
       index_of_ip (Ipaddr.V4.of_string_exn msg.to_ip) in
