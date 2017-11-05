@@ -24,6 +24,7 @@ let main =
     package "gg"; 
     package "vg";
     package "vg.svg";
+    package "duration"; 
   ] 
   and keys = List.map Key.abstract [
       http_port;

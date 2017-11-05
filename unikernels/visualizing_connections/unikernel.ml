@@ -127,10 +127,21 @@ module Dispatch
     let dst_ip_real = match type_ with `To_master ip -> ip | _ -> dst_ip in
     let dst_port = 4040 
     in
-    Stack.TCPV4.create_connection tcpv4 (dst_ip_real, dst_port) >>= function
+    let connection =
+      Stack.TCPV4.create_connection tcpv4 (dst_ip_real, dst_port)
+    and timeout =
+      OS.Time.sleep_ns (Duration.of_ms 700) >>= fun () ->
+      err_lwt `Timeout
+    in
+    Lwt.pick [connection; timeout] >>= function
+    | Error `Timeout ->
+      err_lwt (
+        R.msg @@ Printf.sprintf "timeout for connection %s on port %d"
+          (Ipaddr.V4.to_string dst_ip_real) dst_port
+      )
     | Error _ ->
       err_lwt (
-        R.msg @@ Printf.sprintf "error contacting destination %s on port %d"
+        R.msg @@ Printf.sprintf "error connecting to %s on port %d"
           (Ipaddr.V4.to_string dst_ip_real) dst_port
       )
     | Ok flow ->
