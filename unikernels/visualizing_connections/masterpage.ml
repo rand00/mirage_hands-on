@@ -46,7 +46,7 @@ module Graphics = struct
         v2
 
     let degree_to_polar d =
-      (Float.two_pi /. 360.) *. float (d mod 360) 
+      -. (Float.two_pi /. 360.) *. float (d mod 360) 
     
   end 
 
