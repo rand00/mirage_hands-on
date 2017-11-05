@@ -14,6 +14,12 @@ let cmd_socket_port =
   let arg = Key.Arg.info ~doc ["cmd_socket"] in
   Key.(create "cmd_socket_port" Arg.(opt int 4040 arg))
 
+let timeout =
+  let doc = "Timeout in ms when connecting to other \
+             actors." in
+  let arg = Key.Arg.info ~doc ["timeout"] in
+  Key.(create "timeout" Arg.(opt int 700 arg))
+
 let main =
   let packages = [
     package "uri";
@@ -29,6 +35,7 @@ let main =
   and keys = List.map Key.abstract [
       http_port;
       cmd_socket_port;
+      timeout
     ]
   in
   foreign "Unikernel.Main"

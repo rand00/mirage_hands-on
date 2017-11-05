@@ -130,7 +130,8 @@ module Dispatch
     let connection =
       Stack.TCPV4.create_connection tcpv4 (dst_ip_real, dst_port)
     and timeout =
-      OS.Time.sleep_ns (Duration.of_ms 700) >>= fun () ->
+      let ms = Key_gen.timeout () in
+      OS.Time.sleep_ns (Duration.of_ms ms) >>= fun () -> 
       err_lwt `Timeout
     in
     Lwt.pick [connection; timeout] >>= function
