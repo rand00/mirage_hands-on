@@ -3,6 +3,13 @@ PKG mirage-kv-lwt mirage-types-lwt mirage-net-lwt
 PKG mirage-stack-lwt mirage-fs-lwt cohttp-lwt
 PKG vg gg tyxml containers
 PKG ppx_sexp_conv sexplib 
+PKG duration
+
+PKG lwt mirage mirage-types tcpip mirage-http conduit.mirage mirage-console
+PKG cohttp mirage-net-unix mirage-unix mirage-clock-unix functoria
+PKG tcpip.ethif tcpip.arpv4 tls logs mirage-logs
+PKG magic-mime mirage-types-lwt duration
+
 
 S .
 B _build
